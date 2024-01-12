@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:archon/views/dashboard_view.dart';
+import 'package:archon/views/equipment_view.dart';
+import 'package:archon/views/git_view.dart';
+import 'package:archon/views/settings_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -108,44 +112,8 @@ class _MyHomePageState extends State<MyHomePage> {
         return const SettingsView();
       // Add other cases for different views
       default:
-        return const Center(child: Text('Select an item from the drawer'));
+        return const Center(
+            child: Text('Select an item from the navigation panel'));
     }
-  }
-}
-
-// Placeholder widgets for different views
-class DashboardView extends StatelessWidget {
-  const DashboardView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Dashboard View'));
-  }
-}
-
-class EquipmentView extends StatelessWidget {
-  const EquipmentView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Equipment View'));
-  }
-}
-
-class GitView extends StatelessWidget {
-  const GitView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Git View'));
-  }
-}
-
-class SettingsView extends StatelessWidget {
-  const SettingsView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Settings View'));
   }
 }
