@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Archon',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.tealAccent),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.yellowAccent),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Archon Home Page'),
@@ -90,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       bottomNavigationBar: const BottomAppBar(
         child: SizedBox(
-          height: 30.0, // Updated height to 30
+          height: 30.0,
           child: Center(
             child: Text('Status Bar - Display Status Here'),
           ),
