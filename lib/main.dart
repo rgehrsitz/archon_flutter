@@ -4,6 +4,8 @@ import 'package:archon/views/equipment_view.dart';
 import 'package:archon/views/git_view.dart';
 import 'package:archon/views/settings_view.dart';
 
+import 'widgets/menubar_widget.dart';
+
 void main() {
   runApp(const MyApp());
 }
