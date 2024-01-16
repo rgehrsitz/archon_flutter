@@ -43,60 +43,81 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Archon'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.manage_accounts),
-            tooltip: 'Accounts',
-            onPressed: () {},
-          )
-        ],
-        // Add other app bar properties or actions
-      ),
-      body: Row(
+      body: Column(
         children: [
-          NavigationRail(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (int index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            labelType: NavigationRailLabelType.none,
-            indicatorShape: const CircleBorder(eccentricity: 0.0),
-            destinations: const [
-              NavigationRailDestination(
-                icon: Icon(Icons.dashboard),
-                label: Text('Dashboard'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.list),
-                label: Text('Equipment Listing'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.compare),
-                label: Text('Git View'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.settings),
-                label: Text('Settings'),
-              ),
-            ],
+          Container(
+            color:
+                Colors.grey[200], // Adjust the color to match your app's theme
+            padding: const EdgeInsets.symmetric(
+                horizontal: 8.0), // Add some padding if needed
+            child: Row(
+              children: [
+                const MyMenuBar(), // Your menu bar here
+                const Spacer(), // This will push the following widgets to either side of the Row
+                Text(
+                  'Archon',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const Spacer(), // Another spacer
+                IconButton(
+                  icon: const Icon(Icons.manage_accounts),
+                  tooltip: 'Accounts',
+                  onPressed: () {
+                    // Your onPressed function here
+                  },
+                ),
+              ],
+            ),
           ),
-          const VerticalDivider(thickness: 1, width: 1),
           Expanded(
-            child: _getDrawerItemWidget(_selectedIndex),
+            child: Scaffold(
+              body: Row(
+                children: [
+                  NavigationRail(
+                    selectedIndex: _selectedIndex,
+                    onDestinationSelected: (int index) {
+                      setState(() {
+                        _selectedIndex = index;
+                      });
+                    },
+                    labelType: NavigationRailLabelType.none,
+                    indicatorShape: const CircleBorder(eccentricity: 0.0),
+                    destinations: const [
+                      NavigationRailDestination(
+                        icon: Icon(Icons.dashboard),
+                        label: Text('Dashboard'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.list),
+                        label: Text('Equipment Listing'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.compare),
+                        label: Text('Git View'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.settings),
+                        label: Text('Settings'),
+                      ),
+                    ],
+                  ),
+                  const VerticalDivider(thickness: 1, width: 1),
+                  Expanded(
+                    child: _getDrawerItemWidget(_selectedIndex),
+                  ),
+                ],
+              ),
+              bottomNavigationBar: const BottomAppBar(
+                child: SizedBox(
+                  height: 30.0,
+                  child: Center(
+                    child: Text('Status Bar - Display Status Here'),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
-      ),
-      bottomNavigationBar: const BottomAppBar(
-        child: SizedBox(
-          height: 30.0,
-          child: Center(
-            child: Text('Status Bar - Display Status Here'),
-          ),
-        ),
       ),
     );
   }
