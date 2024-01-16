@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:file_selector/file_selector.dart';
+import '../utils/file_utils.dart';
 
 class MenuModel {
   static List<MenuItem> getFileMenu() {
@@ -14,7 +14,7 @@ class MenuModel {
           label: 'Open...',
           onPressed: () {
             // Handle open file
-            _openFile();
+            openFileDialog();
           }),
       MenuItem(
         label: 'Save',
@@ -102,24 +102,5 @@ class MyMenuBar extends StatelessWidget {
         ),
       ],
     );
-  }
-}
-
-Future<void> _openFile() async {
-  const String jsonExtension = '.json';
-  const XTypeGroup jsonTypeGroup = XTypeGroup(
-    label: 'JSON files',
-    extensions: [jsonExtension],
-  );
-
-  final XFile? file = await openFile(
-    acceptedTypeGroups: [jsonTypeGroup],
-  );
-
-  if (file != null) {
-    // Do something with the file (read it, display it, etc.)
-    final String fileContent = await file.readAsString();
-    // For example, you might want to use the file content or just print it:
-    print(fileContent);
   }
 }
