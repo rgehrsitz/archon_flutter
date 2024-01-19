@@ -4,10 +4,10 @@ class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
 
   @override
-  _SettingsViewState createState() => _SettingsViewState();
+  SettingsViewState createState() => SettingsViewState();
 }
 
-class _SettingsViewState extends State<SettingsView> {
+class SettingsViewState extends State<SettingsView> {
   // Example settings values, replace with your actual settings
   bool autoFetch = true;
   bool autoPrune = true;

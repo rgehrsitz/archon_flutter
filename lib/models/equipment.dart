@@ -10,6 +10,7 @@ class Equipment {
   DateTime dateTimeUpdated;
   Map<String, dynamic> userDefinedProperties;
   List<Equipment> children;
+  Equipment? parent; //track the parent for drag and drop
 
   Equipment({
     String? uuid,

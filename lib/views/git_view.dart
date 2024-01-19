@@ -4,10 +4,10 @@ class GitView extends StatefulWidget {
   const GitView({super.key});
 
   @override
-  _GitViewState createState() => _GitViewState();
+  GitViewState createState() => GitViewState();
 }
 
-class _GitViewState extends State<GitView> {
+class GitViewState extends State<GitView> {
   // The selected commit for details and diff
   // This is just a placeholder, you'll need to replace it with your actual commit data type
   Map<String, dynamic>? selectedCommit;

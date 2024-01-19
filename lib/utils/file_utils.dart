@@ -2,9 +2,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:archon/models/equipment.dart';
 import 'dart:convert';
-
-// Define the provider for equipment data
-final equipmentProvider = StateProvider<Equipment?>((ref) => null);
+import '../models/providers.dart';
 
 Future<void> openFileDialog(WidgetRef ref) async {
   const String jsonExtension = '.json';
@@ -22,5 +20,8 @@ Future<void> openFileDialog(WidgetRef ref) async {
     final Equipment equipmentData = Equipment.fromJSON(jsonData);
     // Update the state with the new equipment data
     ref.read(equipmentProvider.notifier).state = equipmentData;
+    print('Equipment data loaded: ${equipmentData.name}');
+    print(
+        'Provider updated with equipment: ${ref.read(equipmentProvider.notifier).state?.name}');
   }
 }

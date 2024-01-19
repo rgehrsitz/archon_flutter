@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/equipment.dart';
-// Import any necessary tree view package if needed
+import '../models/providers.dart';
+import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 
-// A provider that will hold the root of the equipment tree
-final equipmentTreeProvider = StateProvider<Equipment?>((ref) => null);
+import 'equipment_detail_view.dart';
 
 class EquipmentView extends ConsumerStatefulWidget {
   const EquipmentView({super.key});
@@ -31,8 +31,8 @@ class _EquipmentViewState extends ConsumerState<EquipmentView> {
 
   @override
   Widget build(BuildContext context) {
-    // Get the equipment tree from the Riverpod provider
-    final equipmentTree = ref.watch(equipmentTreeProvider);
+    final equipmentTree = ref.watch(equipmentProvider);
+    print('Rebuilding EquipmentView with: ${equipmentTree?.name}');
 
     return Scaffold(
       body: Column(
@@ -55,19 +55,13 @@ class _EquipmentViewState extends ConsumerState<EquipmentView> {
           Expanded(
             child: Row(
               children: [
-                // Hierarchical view of equipment on the left
                 Expanded(
                   flex: 2,
-                  child: EquipmentTreeView(
-                    filter: _filter,
-                    equipmentTree: equipmentTree,
-                    onEquipmentSelected: (Equipment selectedEquipment) {
-                      // Handle equipment selection
-                    },
-                  ),
+                  child: equipmentTree != null
+                      ? MyTreeView(equipmentTree: equipmentTree)
+                      : const Text('No equipment data loaded.'),
                 ),
                 const VerticalDivider(width: 1),
-                // Detailed view of the selected equipment on the right
                 Expanded(
                   flex: 3,
                   child: equipmentTree != null
@@ -83,55 +77,122 @@ class _EquipmentViewState extends ConsumerState<EquipmentView> {
   }
 }
 
-// Widget for Equipment Tree View
-class EquipmentTreeView extends StatelessWidget {
-  final String filter;
-  final Equipment? equipmentTree;
-  final Function(Equipment) onEquipmentSelected;
+// Convert Equipment model to TreeNode model
+MyTreeNode _convertEquipmentToTreeNode(Equipment equipment,
+    [MyTreeNode? parent]) {
+  // Convert children and set their parent to the newly created node
+  var childrenNodes = equipment.children
+      .map((child) => _convertEquipmentToTreeNode(child))
+      .toList();
 
-  const EquipmentTreeView({
-    super.key,
-    required this.filter,
-    required this.equipmentTree,
-    required this.onEquipmentSelected,
-  });
+  // For debugging purposes, let's print the structure
+  print(
+      'Converted ${equipment.name} with ${equipment.children.length} children.');
+
+  // Create a node and assign the children directly
+  return MyTreeNode(
+    title: equipment.name,
+    children: childrenNodes,
+    parent: parent,
+  );
+}
+
+// TreeView widget using flutter_fancy_tree_view
+class MyTreeView extends StatefulWidget {
+  final Equipment equipmentTree;
+
+  const MyTreeView({super.key, required this.equipmentTree});
+
+  @override
+  MyTreeViewState createState() => MyTreeViewState();
+}
+
+class MyTreeViewState extends State<MyTreeView> {
+  late final TreeController<MyTreeNode> treeController;
+  late List<MyTreeNode> roots;
+
+  @override
+  void initState() {
+    super.initState();
+    printEquipment(
+        widget.equipmentTree); // Add this line to print the equipment structure
+
+    // Convert your Equipment data to TreeNode data
+    roots = [_convertEquipmentToTreeNode(widget.equipmentTree)];
+    // Debug: Print the root nodes to the console
+    print('Root nodes: $roots');
+
+    // Instantiate the TreeController with the root nodes
+    treeController = TreeController<MyTreeNode>(
+      roots: roots,
+      childrenProvider: (MyTreeNode node) => node.children,
+      parentProvider: (MyTreeNode node) => node.parent,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // You should replace this with your actual implementation of a tree view
-    // which could be a custom widget or a package that you prefer.
-    // It should use the equipmentTree and filter to display the data.
-    return const Text('Tree View with filter');
+    // Debug: Print the current state of the treeController's root nodes
+    print('TreeController roots: ${treeController.roots}');
+    return TreeView<MyTreeNode>(
+      treeController: treeController,
+      nodeBuilder: (BuildContext context, TreeEntry<MyTreeNode> entry) {
+        return InkWell(
+          onTap: () {
+            setState(() {
+              // Toggle expansion state
+              entry.node.isExpanded = !entry.node.isExpanded;
+            });
+            treeController.toggleExpansion(
+                entry.node); // Make sure to toggle expansion in the controller
+          },
+          child: TreeIndentation(
+            entry: entry,
+            child: Row(
+              children: [
+                if (entry.node.children
+                    .isNotEmpty) // Display an icon to indicate expandable nodes
+                  Icon(
+                    entry.node.isExpanded
+                        ? Icons.expand_less
+                        : Icons.expand_more,
+                    size: 16.0,
+                  ),
+                Text(entry.node.title),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
-// Widget for Equipment Detail View
-class EquipmentDetailView extends StatelessWidget {
-  final Equipment? equipment;
+class MyTreeNode {
+  MyTreeNode({
+    required this.title,
+    required this.children,
+    this.parent,
+    this.isExpanded = false,
+  });
 
-  const EquipmentDetailView({super.key, this.equipment});
+  final String title;
+  List<MyTreeNode> children;
+  MyTreeNode? parent;
+  bool isExpanded;
 
   @override
-  Widget build(BuildContext context) {
-    if (equipment == null) {
-      return const Text('No equipment selected.');
-    }
+  String toString() {
+    // Providing a better string representation for debugging purposes
+    return 'MyTreeNode(title: $title, children count: ${children.length}, isExpanded: $isExpanded)';
+  }
+}
 
-    // Here you would display the details of the selected equipment.
-    // This could include name, type, description, and any user-defined properties.
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Equipment Details: ${equipment!.name}',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          // Display other properties of the equipment
-          // You can create a widget that displays each property, or use a loop to generate them
-        ],
-      ),
-    );
+// Debug function to print the Equipment structure
+void printEquipment(Equipment equipment, [int level = 0]) {
+  var indent = '  ' * level;
+  print('$indent${equipment.name}, children: ${equipment.children.length}');
+  for (var child in equipment.children) {
+    printEquipment(child, level + 1); // Recurse into children
   }
 }
