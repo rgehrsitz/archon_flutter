@@ -3,11 +3,17 @@ import 'package:archon/views/dashboard_view.dart';
 import 'package:archon/views/equipment_view.dart';
 import 'package:archon/views/git_view.dart';
 import 'package:archon/views/settings_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'widgets/menubar_widget.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      // Make sure to wrap your app with ProviderScope
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,7 +26,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Archon',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.yellowAccent),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Archon Home Page'),

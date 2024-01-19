@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/equipment.dart';
 // Import any necessary tree view package if needed
 
-class EquipmentView extends StatefulWidget {
+// A provider that will hold the root of the equipment tree
+final equipmentTreeProvider = StateProvider<Equipment?>((ref) => null);
+
+class EquipmentView extends ConsumerStatefulWidget {
   const EquipmentView({super.key});
 
   @override
-  State<EquipmentView> createState() => _EquipmentViewState();
+  ConsumerState<EquipmentView> createState() => _EquipmentViewState();
 }
 
-class _EquipmentViewState extends State<EquipmentView> {
+class _EquipmentViewState extends ConsumerState<EquipmentView> {
   late TextEditingController _filterController;
   String _filter = "";
 
@@ -27,6 +31,9 @@ class _EquipmentViewState extends State<EquipmentView> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the equipment tree from the Riverpod provider
+    final equipmentTree = ref.watch(equipmentTreeProvider);
+
     return Scaffold(
       body: Column(
         children: [
@@ -53,18 +60,19 @@ class _EquipmentViewState extends State<EquipmentView> {
                   flex: 2,
                   child: EquipmentTreeView(
                     filter: _filter,
-                    onEquipmentSelected: (equipment) {
-                      // TODO: Implement onEquipmentSelected
+                    equipmentTree: equipmentTree,
+                    onEquipmentSelected: (Equipment selectedEquipment) {
+                      // Handle equipment selection
                     },
                   ),
                 ),
                 const VerticalDivider(width: 1),
                 // Detailed view of the selected equipment on the right
-                const Expanded(
+                Expanded(
                   flex: 3,
-                  child: EquipmentDetailView(
-                      // Pass the selected equipment details to this widget
-                      ),
+                  child: equipmentTree != null
+                      ? EquipmentDetailView(equipment: equipmentTree)
+                      : const Text('Please select an equipment item.'),
                 ),
               ],
             ),
@@ -75,47 +83,53 @@ class _EquipmentViewState extends State<EquipmentView> {
   }
 }
 
-// Placeholder Widget for Equipment Tree View
+// Widget for Equipment Tree View
 class EquipmentTreeView extends StatelessWidget {
   final String filter;
+  final Equipment? equipmentTree;
   final Function(Equipment) onEquipmentSelected;
 
   const EquipmentTreeView({
     super.key,
     required this.filter,
+    required this.equipmentTree,
     required this.onEquipmentSelected,
   });
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Implement the actual tree view
-    // The tree view should filter and show equipment based on the filter string
-    return Container(
-      child: const Text('Tree View with filter'),
-    );
+    // You should replace this with your actual implementation of a tree view
+    // which could be a custom widget or a package that you prefer.
+    // It should use the equipmentTree and filter to display the data.
+    return const Text('Tree View with filter');
   }
 }
 
-// Placeholder Widget for Equipment Detail View
+// Widget for Equipment Detail View
 class EquipmentDetailView extends StatelessWidget {
-// This widget would be passed an 'Equipment' object to display its details
-// For now, it's empty as we don't have an 'Equipment' class or instance
+  final Equipment? equipment;
 
-  const EquipmentDetailView({super.key});
+  const EquipmentDetailView({super.key, this.equipment});
 
   @override
   Widget build(BuildContext context) {
-// TODO: Implement the detailed view for a selected piece of equipment
+    if (equipment == null) {
+      return const Text('No equipment selected.');
+    }
+
+    // Here you would display the details of the selected equipment.
+    // This could include name, type, description, and any user-defined properties.
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Equipment Details',
+            'Equipment Details: ${equipment!.name}',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-// Add more widgets to display the details of the equipment
+          // Display other properties of the equipment
+          // You can create a widget that displays each property, or use a loop to generate them
         ],
       ),
     );

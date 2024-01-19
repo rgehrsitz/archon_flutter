@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../utils/file_utils.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MenuModel {
-  static List<MenuItem> getFileMenu() {
+  static List<MenuItem> getFileMenu(WidgetRef ref) {
     return [
       MenuItem(
           label: 'New',
@@ -12,9 +13,9 @@ class MenuModel {
           }),
       MenuItem(
           label: 'Open...',
-          onPressed: () {
+          onPressed: () async {
             // Handle open file
-            openFileDialog();
+            await openFileDialog(ref);
           }),
       MenuItem(
         label: 'Save',
@@ -71,15 +72,15 @@ class MenuItem {
   });
 }
 
-class MyMenuBar extends StatelessWidget {
+class MyMenuBar extends ConsumerWidget {
   const MyMenuBar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MenuBar(
       children: [
         SubmenuButton(
-          menuChildren: MenuModel.getFileMenu()
+          menuChildren: MenuModel.getFileMenu(ref)
               .map(
                 (item) => MenuItemButton(
                   onPressed: item.onPressed,
@@ -100,6 +101,7 @@ class MyMenuBar extends StatelessWidget {
               .toList(),
           child: const Text('Edit'),
         ),
+        // ... Other SubmenuButtons
       ],
     );
   }

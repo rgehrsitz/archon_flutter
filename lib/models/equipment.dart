@@ -58,15 +58,18 @@ class Equipment {
 
   static Equipment fromJSON(Map<String, dynamic> json) {
     return Equipment(
-      uuid: json['uuid'],
-      name: json['name'],
-      type: json['type'],
-      description: json['description'],
-      userDefinedProperties: json['userDefinedProperties'],
-      children: List<Equipment>.from(json['children']
-          .map((childJson) => Equipment.fromJSON(jsonDecode(childJson)))),
-      dateTimeCreated: DateTime.parse(json['dateTimeCreated']),
-      dateTimeUpdated: DateTime.parse(json['dateTimeUpdated']),
+      uuid: json['uuid'] as String? ?? const Uuid().v4(),
+      name: json['name'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      userDefinedProperties:
+          json['userDefinedProperties'] as Map<String, dynamic>? ?? {},
+      children: (json['children'] as List? ?? [])
+          .map((childJson) =>
+              Equipment.fromJSON(childJson as Map<String, dynamic>))
+          .toList(),
+      dateTimeCreated: DateTime.parse(json['dateTimeCreated'] as String),
+      dateTimeUpdated: DateTime.parse(json['dateTimeUpdated'] as String),
     );
   }
 }

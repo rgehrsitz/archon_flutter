@@ -1,6 +1,12 @@
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:archon/models/equipment.dart';
+import 'dart:convert';
 
-Future<void> openFileDialog() async {
+// Define the provider for equipment data
+final equipmentProvider = StateProvider<Equipment?>((ref) => null);
+
+Future<void> openFileDialog(WidgetRef ref) async {
   const String jsonExtension = '.json';
   const XTypeGroup jsonTypeGroup = XTypeGroup(
     label: 'JSON files',
@@ -10,11 +16,11 @@ Future<void> openFileDialog() async {
   final XFile? file = await openFile(
     acceptedTypeGroups: [jsonTypeGroup],
   );
-
   if (file != null) {
-    // Do something with the file (read it, display it, etc.)
     final String fileContent = await file.readAsString();
-    // For example, you might want to use the file content or just print it:
-    print(fileContent);
+    final jsonData = jsonDecode(fileContent);
+    final Equipment equipmentData = Equipment.fromJSON(jsonData);
+    // Update the state with the new equipment data
+    ref.read(equipmentProvider.notifier).state = equipmentData;
   }
 }
