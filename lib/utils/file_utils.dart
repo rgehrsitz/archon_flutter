@@ -20,8 +20,5 @@ Future<void> openFileDialog(WidgetRef ref) async {
     final Equipment equipmentData = Equipment.fromJSON(jsonData);
     // Update the state with the new equipment data
     ref.read(equipmentProvider.notifier).state = equipmentData;
-    print('Equipment data loaded: ${equipmentData.name}');
-    print(
-        'Provider updated with equipment: ${ref.read(equipmentProvider.notifier).state?.name}');
   }
 }

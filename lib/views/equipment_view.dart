@@ -32,7 +32,6 @@ class _EquipmentViewState extends ConsumerState<EquipmentView> {
   @override
   Widget build(BuildContext context) {
     final equipmentTree = ref.watch(equipmentProvider);
-    print('Rebuilding EquipmentView with: ${equipmentTree?.name}');
 
     return Scaffold(
       body: Column(
@@ -85,10 +84,6 @@ MyTreeNode _convertEquipmentToTreeNode(Equipment equipment,
       .map((child) => _convertEquipmentToTreeNode(child))
       .toList();
 
-  // For debugging purposes, let's print the structure
-  print(
-      'Converted ${equipment.name} with ${equipment.children.length} children.');
-
   // Create a node and assign the children directly
   return MyTreeNode(
     title: equipment.name,
@@ -114,13 +109,11 @@ class MyTreeViewState extends State<MyTreeView> {
   @override
   void initState() {
     super.initState();
-    printEquipment(
-        widget.equipmentTree); // Add this line to print the equipment structure
+    //printEquipment(
+    //    widget.equipmentTree); // Add this line to print the equipment structure
 
     // Convert your Equipment data to TreeNode data
     roots = [_convertEquipmentToTreeNode(widget.equipmentTree)];
-    // Debug: Print the root nodes to the console
-    print('Root nodes: $roots');
 
     // Instantiate the TreeController with the root nodes
     treeController = TreeController<MyTreeNode>(
@@ -132,8 +125,6 @@ class MyTreeViewState extends State<MyTreeView> {
 
   @override
   Widget build(BuildContext context) {
-    // Debug: Print the current state of the treeController's root nodes
-    print('TreeController roots: ${treeController.roots}');
     return TreeView<MyTreeNode>(
       treeController: treeController,
       nodeBuilder: (BuildContext context, TreeEntry<MyTreeNode> entry) {
@@ -189,10 +180,9 @@ class MyTreeNode {
 }
 
 // Debug function to print the Equipment structure
-void printEquipment(Equipment equipment, [int level = 0]) {
-  var indent = '  ' * level;
-  print('$indent${equipment.name}, children: ${equipment.children.length}');
-  for (var child in equipment.children) {
-    printEquipment(child, level + 1); // Recurse into children
-  }
-}
+// void printEquipment(Equipment equipment, [int level = 0]) {
+//   var indent = '  ' * level;
+//   for (var child in equipment.children) {
+//     printEquipment(child, level + 1); // Recurse into children
+//   }
+// }
