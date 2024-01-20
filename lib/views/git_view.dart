@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class GitView extends StatefulWidget {
+class GitView extends ConsumerStatefulWidget {
   const GitView({super.key});
 
   @override
-  GitViewState createState() => GitViewState();
+  ConsumerState<GitView> createState() => GitViewState();
 }
 
-class GitViewState extends State<GitView> {
+class GitViewState extends ConsumerState<GitView> {
   // The selected commit for details and diff
   // This is just a placeholder, you'll need to replace it with your actual commit data type
   Map<String, dynamic>? selectedCommit;

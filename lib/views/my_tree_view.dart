@@ -2,8 +2,9 @@ import 'package:archon/models/equipment.dart';
 import 'package:archon/views/equipment_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MyTreeView extends StatefulWidget {
+class MyTreeView extends ConsumerStatefulWidget {
   final Equipment equipmentTree;
   final Function(Equipment) onEquipmentSelected;
 
@@ -13,10 +14,10 @@ class MyTreeView extends StatefulWidget {
       required this.onEquipmentSelected});
 
   @override
-  MyTreeViewState createState() => MyTreeViewState();
+  ConsumerState<MyTreeView> createState() => _MyTreeViewState();
 }
 
-class MyTreeViewState extends State<MyTreeView> {
+class _MyTreeViewState extends ConsumerState<MyTreeView> {
   late final TreeController<MyTreeNode> treeController;
   late List<MyTreeNode> roots;
 

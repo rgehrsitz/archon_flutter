@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SettingsView extends StatefulWidget {
+class SettingsView extends ConsumerStatefulWidget {
   const SettingsView({super.key});
 
   @override
-  SettingsViewState createState() => SettingsViewState();
+  ConsumerState<SettingsView> createState() => SettingsViewState();
 }
 
-class SettingsViewState extends State<SettingsView> {
+class SettingsViewState extends ConsumerState<SettingsView> {
   // Example settings values, replace with your actual settings
   bool autoFetch = true;
   bool autoPrune = true;

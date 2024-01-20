@@ -1,6 +1,5 @@
 import 'package:archon/models/equipment.dart';
 import 'package:flutter/material.dart';
-import '../models/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EquipmentDetailView extends ConsumerStatefulWidget {
@@ -44,36 +43,6 @@ class EquipmentDetailViewState extends ConsumerState<EquipmentDetailView> {
     widget.equipment?.userDefinedProperties.forEach((key, value) {
       propertyControllers[key] = TextEditingController(text: value.toString());
     });
-  }
-
-  void _onUpdate(String updatedValue, String propertyName) {
-    final equipment = widget.equipment;
-    if (equipment != null) {
-      setState(() {
-        switch (propertyName) {
-          case 'name':
-            equipment.name = updatedValue;
-            break;
-          case 'description':
-            equipment.description = updatedValue;
-            break;
-          case 'type':
-            equipment.type = updatedValue;
-            break;
-          default:
-            equipment.userDefinedProperties[propertyName] = updatedValue;
-            break;
-        }
-      });
-      // Use ref.read() to access the notifier and call its method
-      ref.read(equipmentProvider.notifier).state = equipment;
-
-      // Optionally, you can add the operation to the undoManager here
-      // final undoManager = ref.read(undoManagerProvider);
-      // undoManager.addOperation(() {
-      //   // Code to revert the changes
-      // });
-    }
   }
 
   @override
@@ -193,7 +162,7 @@ class EquipmentDetailViewState extends ConsumerState<EquipmentDetailView> {
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (BuildContext context) {
-        return _AddPropertyDialog();
+        return const AddPropertyDialog();
       },
     );
 
@@ -216,12 +185,14 @@ class EquipmentDetailViewState extends ConsumerState<EquipmentDetailView> {
   }
 }
 
-class _AddPropertyDialog extends StatefulWidget {
+class AddPropertyDialog extends ConsumerStatefulWidget {
+  const AddPropertyDialog({super.key});
+
   @override
-  _AddPropertyDialogState createState() => _AddPropertyDialogState();
+  ConsumerState<AddPropertyDialog> createState() => _AddPropertyDialogState();
 }
 
-class _AddPropertyDialogState extends State<_AddPropertyDialog> {
+class _AddPropertyDialogState extends ConsumerState<AddPropertyDialog> {
   final keyController = TextEditingController();
   final valueController = TextEditingController();
 
@@ -259,6 +230,7 @@ class _AddPropertyDialogState extends State<_AddPropertyDialog> {
         TextButton(
           child: const Text('Add'),
           onPressed: () {
+            // Implement any Riverpod provider logic if needed here
             Navigator.of(context).pop({
               keyController.text: valueController.text,
             });

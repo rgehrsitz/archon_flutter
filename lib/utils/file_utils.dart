@@ -20,7 +20,7 @@ Future<void> openFileDialog(WidgetRef ref) async {
     final jsonData = jsonDecode(fileContent);
     final Equipment equipmentData = Equipment.fromJSON(jsonData);
     // Update the state with the new equipment data
-    ref.read(equipmentProvider.notifier).state = equipmentData;
+    ref.read(equipmentProvider.notifier).updateEquipment(equipmentData);
     ref.read(currentFilePathProvider.notifier).state =
         file.path; // Set the current file path
   }
