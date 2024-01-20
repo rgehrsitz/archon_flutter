@@ -14,6 +14,9 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
   late TextEditingController nameController;
   late TextEditingController descriptionController;
   late TextEditingController typeController;
+  late TextEditingController uuidController;
+  late TextEditingController dateTimeCreatedController;
+  late TextEditingController dateTimeUpdatedController;
   Map<String, TextEditingController> propertyControllers = {};
 
   @override
@@ -27,7 +30,14 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
     descriptionController =
         TextEditingController(text: widget.equipment?.description);
     typeController = TextEditingController(text: widget.equipment?.type);
+    // Initialize controllers for read-only fields
+    uuidController = TextEditingController(text: widget.equipment?.uuid);
+    dateTimeCreatedController = TextEditingController(
+        text: widget.equipment?.dateTimeCreated.toString());
+    dateTimeUpdatedController = TextEditingController(
+        text: widget.equipment?.dateTimeUpdated.toString());
 
+    propertyControllers.clear(); // Clear existing controllers
     widget.equipment?.userDefinedProperties.forEach((key, value) {
       propertyControllers[key] = TextEditingController(text: value.toString());
     });
@@ -63,11 +73,9 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
             _buildEditableField('Type', typeController, onUpdate: (newValue) {
               widget.equipment?.type = newValue;
             }, isMultiline: true),
-            _buildReadOnlyField('UUID', widget.equipment!.uuid),
-            _buildReadOnlyField(
-                'Date Created', widget.equipment!.dateTimeCreated.toString()),
-            _buildReadOnlyField(
-                'Date Updated', widget.equipment!.dateTimeUpdated.toString()),
+            _buildReadOnlyField('UUID', uuidController),
+            _buildReadOnlyField('Date Created', dateTimeCreatedController),
+            _buildReadOnlyField('Date Updated', dateTimeUpdatedController),
             const Divider(),
             const Text('User Defined Properties',
                 style: TextStyle(fontWeight: FontWeight.bold)),
@@ -105,16 +113,19 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
     );
   }
 
-  Widget _buildReadOnlyField(String label, String value) {
+  Widget _buildReadOnlyField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
-        initialValue: value,
+        controller: controller,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
+          filled: true,
+          fillColor:
+              Colors.grey[200], // Optional: gives a distinct background color
         ),
-        readOnly: true,
+        readOnly: true, // Set to true to make the field read-only
       ),
     );
   }

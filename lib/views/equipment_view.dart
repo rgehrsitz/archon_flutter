@@ -16,6 +16,7 @@ class EquipmentView extends ConsumerStatefulWidget {
 class _EquipmentViewState extends ConsumerState<EquipmentView> {
   late TextEditingController _filterController;
   String _filter = "";
+  Equipment? selectedEquipment;
 
   @override
   void initState() {
@@ -57,15 +58,28 @@ class _EquipmentViewState extends ConsumerState<EquipmentView> {
                 Expanded(
                   flex: 2,
                   child: equipmentTree != null
-                      ? MyTreeView(equipmentTree: equipmentTree)
+                      ? MyTreeView(
+                          equipmentTree: equipmentTree,
+                          onEquipmentSelected: (Equipment equipment) {
+                            setState(() {
+                              selectedEquipment = equipment;
+                            });
+                          },
+                        )
                       : const Text('No equipment data loaded.'),
                 ),
                 const VerticalDivider(width: 1),
                 Expanded(
                   flex: 3,
-                  child: equipmentTree != null
-                      ? EquipmentDetailView(equipment: equipmentTree)
-                      : const Text('Please select an equipment item.'),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: selectedEquipment != null
+                        ? SingleChildScrollView(
+                            child: EquipmentDetailView(
+                                equipment: selectedEquipment),
+                          )
+                        : const Text('Please select an equipment item.'),
+                  ),
                 ),
               ],
             ),
@@ -89,14 +103,19 @@ MyTreeNode _convertEquipmentToTreeNode(Equipment equipment,
     title: equipment.name,
     children: childrenNodes,
     parent: parent,
+    uuid: equipment.uuid,
   );
 }
 
 // TreeView widget using flutter_fancy_tree_view
 class MyTreeView extends StatefulWidget {
   final Equipment equipmentTree;
+  final Function(Equipment) onEquipmentSelected;
 
-  const MyTreeView({super.key, required this.equipmentTree});
+  const MyTreeView(
+      {super.key,
+      required this.equipmentTree,
+      required this.onEquipmentSelected});
 
   @override
   MyTreeViewState createState() => MyTreeViewState();
@@ -136,6 +155,12 @@ class MyTreeViewState extends State<MyTreeView> {
             });
             treeController.toggleExpansion(
                 entry.node); // Make sure to toggle expansion in the controller
+            // Find and pass the selected Equipment object
+            Equipment? selectedEquipment =
+                findEquipmentByUUID(widget.equipmentTree, entry.node.uuid);
+            if (selectedEquipment != null) {
+              widget.onEquipmentSelected(selectedEquipment);
+            }
           },
           child: TreeIndentation(
             entry: entry,
@@ -157,6 +182,16 @@ class MyTreeViewState extends State<MyTreeView> {
       },
     );
   }
+
+  // Utility function to find Equipment by UUID
+  Equipment? findEquipmentByUUID(Equipment root, String uuid) {
+    if (root.uuid == uuid) return root;
+    for (var child in root.children) {
+      var found = findEquipmentByUUID(child, uuid);
+      if (found != null) return found;
+    }
+    return null; // Return null if not found
+  }
 }
 
 class MyTreeNode {
@@ -165,10 +200,12 @@ class MyTreeNode {
     required this.children,
     this.parent,
     this.isExpanded = false,
+    required this.uuid,
   });
 
   final String title;
   List<MyTreeNode> children;
+  final String uuid;
   MyTreeNode? parent;
   bool isExpanded;
 
