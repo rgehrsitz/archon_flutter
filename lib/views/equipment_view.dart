@@ -15,7 +15,7 @@ class EquipmentView extends ConsumerStatefulWidget {
 
 class _EquipmentViewState extends ConsumerState<EquipmentView> {
   late TextEditingController _filterController;
-  String _filter = "";
+  //String _filter = "";
   Equipment? selectedEquipment;
 
   @override
@@ -47,7 +47,7 @@ class _EquipmentViewState extends ConsumerState<EquipmentView> {
               ),
               onChanged: (value) {
                 setState(() {
-                  _filter = value;
+                  //_filter = value;
                 });
               },
             ),

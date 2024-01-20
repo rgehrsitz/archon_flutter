@@ -23,13 +23,9 @@ class MyTreeViewState extends State<MyTreeView> {
   @override
   void initState() {
     super.initState();
-    //printEquipment(
-    //    widget.equipmentTree); // Add this line to print the equipment structure
 
-    // Convert your Equipment data to TreeNode data
     roots = [_convertEquipmentToTreeNode(widget.equipmentTree)];
 
-    // Instantiate the TreeController with the root nodes
     treeController = TreeController<MyTreeNode>(
       roots: roots,
       childrenProvider: (MyTreeNode node) => node.children,
@@ -42,61 +38,60 @@ class MyTreeViewState extends State<MyTreeView> {
     return TreeView<MyTreeNode>(
       treeController: treeController,
       nodeBuilder: (BuildContext context, TreeEntry<MyTreeNode> entry) {
-        return InkWell(
-          onTap: () {
-            setState(() {
-              // Toggle expansion state
-              entry.node.isExpanded = !entry.node.isExpanded;
-            });
-            treeController.toggleExpansion(
-                entry.node); // Make sure to toggle expansion in the controller
-            // Find and pass the selected Equipment object
-            Equipment? selectedEquipment =
-                findEquipmentByUUID(widget.equipmentTree, entry.node.uuid);
-            if (selectedEquipment != null) {
-              widget.onEquipmentSelected(selectedEquipment);
-            }
-          },
-          child: TreeIndentation(
-            entry: entry,
-            child: Row(
-              children: [
-                if (entry.node.children
-                    .isNotEmpty) // Display an icon to indicate expandable nodes
-                  Icon(
+        return TreeIndentation(
+          entry: entry,
+          // Optional: Use if you want to display connection lines
+
+          child: Row(
+            children: [
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    treeController.toggleExpansion(entry.node);
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Icon(
                     entry.node.isExpanded
                         ? Icons.expand_less
                         : Icons.expand_more,
-                    size: 16.0,
+                    size: 20.0,
                   ),
-                Text(entry.node.title),
-              ],
-            ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Equipment? selectedEquipment = findEquipmentByUUID(
+                      widget.equipmentTree, entry.node.uuid);
+                  if (selectedEquipment != null) {
+                    widget.onEquipmentSelected(selectedEquipment);
+                  }
+                },
+                child: Text(entry.node.title),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  // Utility function to find Equipment by UUID
   Equipment? findEquipmentByUUID(Equipment root, String uuid) {
     if (root.uuid == uuid) return root;
     for (var child in root.children) {
       var found = findEquipmentByUUID(child, uuid);
       if (found != null) return found;
     }
-    return null; // Return null if not found
+    return null;
   }
 
-  // Convert Equipment model to TreeNode model
   MyTreeNode _convertEquipmentToTreeNode(Equipment equipment,
       [MyTreeNode? parent]) {
-    // Convert children and set their parent to the newly created node
     var childrenNodes = equipment.children
-        .map((child) => _convertEquipmentToTreeNode(child))
+        .map((child) => _convertEquipmentToTreeNode(child, parent))
         .toList();
 
-    // Create a node and assign the children directly
     return MyTreeNode(
       title: equipment.name,
       children: childrenNodes,

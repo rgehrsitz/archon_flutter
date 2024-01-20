@@ -6,5 +6,15 @@ final undoManagerProvider = Provider<UndoManager>((ref) {
   return UndoManager();
 });
 
-final equipmentProvider = StateProvider<Equipment?>((ref) => null);
 final currentFilePathProvider = StateProvider<String?>((ref) => null);
+
+final equipmentProvider = StateNotifierProvider<EquipmentNotifier, Equipment?>(
+    (ref) => EquipmentNotifier());
+
+class EquipmentNotifier extends StateNotifier<Equipment?> {
+  EquipmentNotifier() : super(null);
+
+  void updateEquipment(Equipment updatedEquipment) {
+    state = updatedEquipment;
+  }
+}

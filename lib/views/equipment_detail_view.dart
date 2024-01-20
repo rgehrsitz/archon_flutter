@@ -1,16 +1,19 @@
 import 'package:archon/models/equipment.dart';
 import 'package:flutter/material.dart';
+import '../models/providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class EquipmentDetailView extends StatefulWidget {
+class EquipmentDetailView extends ConsumerStatefulWidget {
   final Equipment? equipment;
 
   const EquipmentDetailView({super.key, this.equipment});
 
   @override
-  EquipmentDetailViewState createState() => EquipmentDetailViewState();
+  ConsumerState<EquipmentDetailView> createState() =>
+      EquipmentDetailViewState();
 }
 
-class EquipmentDetailViewState extends State<EquipmentDetailView> {
+class EquipmentDetailViewState extends ConsumerState<EquipmentDetailView> {
   late TextEditingController nameController;
   late TextEditingController descriptionController;
   late TextEditingController typeController;
@@ -41,6 +44,36 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
     widget.equipment?.userDefinedProperties.forEach((key, value) {
       propertyControllers[key] = TextEditingController(text: value.toString());
     });
+  }
+
+  void _onUpdate(String updatedValue, String propertyName) {
+    final equipment = widget.equipment;
+    if (equipment != null) {
+      setState(() {
+        switch (propertyName) {
+          case 'name':
+            equipment.name = updatedValue;
+            break;
+          case 'description':
+            equipment.description = updatedValue;
+            break;
+          case 'type':
+            equipment.type = updatedValue;
+            break;
+          default:
+            equipment.userDefinedProperties[propertyName] = updatedValue;
+            break;
+        }
+      });
+      // Use ref.read() to access the notifier and call its method
+      ref.read(equipmentProvider.notifier).state = equipment;
+
+      // Optionally, you can add the operation to the undoManager here
+      // final undoManager = ref.read(undoManagerProvider);
+      // undoManager.addOperation(() {
+      //   // Code to revert the changes
+      // });
+    }
   }
 
   @override
@@ -105,8 +138,10 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
         onSubmitted: (value) {
           onUpdate(value);
         },
+        onChanged: (value) {
+          onUpdate(value);
+        },
         onEditingComplete: () {
-          onUpdate(controller.text);
           FocusScope.of(context).unfocus();
         },
       ),
