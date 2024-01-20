@@ -7,3 +7,4 @@ final undoManagerProvider = Provider<UndoManager>((ref) {
 });
 
 final equipmentProvider = StateProvider<Equipment?>((ref) => null);
+final currentFilePathProvider = StateProvider<String?>((ref) => null);

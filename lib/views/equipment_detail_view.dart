@@ -53,10 +53,16 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildEditableField('Name', nameController),
+            _buildEditableField('Name', nameController, onUpdate: (newValue) {
+              widget.equipment?.name = newValue;
+            }, isMultiline: true),
             _buildEditableField('Description', descriptionController,
-                isMultiline: true),
-            _buildEditableField('Type', typeController),
+                onUpdate: (newValue) {
+              widget.equipment?.description = newValue;
+            }, isMultiline: true),
+            _buildEditableField('Type', typeController, onUpdate: (newValue) {
+              widget.equipment?.type = newValue;
+            }, isMultiline: true),
             _buildReadOnlyField('UUID', widget.equipment!.uuid),
             _buildReadOnlyField(
                 'Date Created', widget.equipment!.dateTimeCreated.toString()),
@@ -76,7 +82,7 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
   }
 
   Widget _buildEditableField(String label, TextEditingController controller,
-      {bool isMultiline = false}) {
+      {bool isMultiline = false, required Function(String) onUpdate}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
@@ -88,8 +94,12 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
         maxLines: isMultiline ? null : 1,
         keyboardType:
             isMultiline ? TextInputType.multiline : TextInputType.text,
-        onChanged: (value) {
-          // Implement logic to handle changes
+        onSubmitted: (value) {
+          onUpdate(value);
+        },
+        onEditingComplete: () {
+          onUpdate(controller.text);
+          FocusScope.of(context).unfocus();
         },
       ),
     );
@@ -114,7 +124,15 @@ class EquipmentDetailViewState extends State<EquipmentDetailView> {
       return Row(
         children: [
           Expanded(
-            child: _buildEditableField(entry.key, entry.value),
+            child: _buildEditableField(
+              entry.key,
+              entry.value,
+              onUpdate: (newValue) {
+                setState(() {
+                  widget.equipment?.userDefinedProperties[entry.key] = newValue;
+                });
+              },
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.delete),

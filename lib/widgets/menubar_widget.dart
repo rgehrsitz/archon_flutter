@@ -20,9 +20,16 @@ class MenuModel {
       MenuItem(
         label: 'Save',
         onPressed: () {
-          // Handle save file
+          saveEquipment(ref);
         },
         shortcut: const SingleActivator(LogicalKeyboardKey.keyS, control: true),
+      ),
+      MenuItem(
+        label: 'Save As',
+        onPressed: () {
+          saveEquipment(ref, saveAs: true);
+        },
+        shortcut: const SingleActivator(LogicalKeyboardKey.keyA, control: true),
       ),
       MenuItem(
           label: 'Exit',

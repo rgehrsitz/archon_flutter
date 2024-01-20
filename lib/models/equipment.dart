@@ -21,9 +21,28 @@ class Equipment {
     this.children = const [],
     DateTime? dateTimeCreated,
     DateTime? dateTimeUpdated,
+    this.parent,
   })  : uuid = uuid ?? const Uuid().v4(),
         dateTimeCreated = dateTimeCreated ?? DateTime.now(),
         dateTimeUpdated = dateTimeUpdated ?? DateTime.now();
+
+  Equipment clone() {
+    return Equipment(
+      uuid: uuid,
+      name: name,
+      type: type,
+      description: description,
+      dateTimeCreated: DateTime.fromMillisecondsSinceEpoch(
+          dateTimeCreated.millisecondsSinceEpoch),
+      dateTimeUpdated: DateTime.fromMillisecondsSinceEpoch(
+          dateTimeUpdated.millisecondsSinceEpoch),
+      userDefinedProperties: Map<String, dynamic>.from(userDefinedProperties),
+      children: children
+          .map((child) => child.clone())
+          .toList(), // Clone children recursively
+      parent: parent, // Keep the same parent reference
+    );
+  }
 
   void updateDetails(String name, String description, String type,
       Map<String, dynamic> userDefinedProperties) {
@@ -44,8 +63,8 @@ class Equipment {
     children.removeWhere((child) => child.uuid == uuid);
   }
 
-  String toJSON() {
-    return jsonEncode({
+  Map<String, dynamic> toJSON() {
+    var data = {
       'uuid': uuid,
       'name': name,
       'description': description,
@@ -53,8 +72,14 @@ class Equipment {
       'dateTimeCreated': dateTimeCreated.toIso8601String(),
       'dateTimeUpdated': dateTimeUpdated.toIso8601String(),
       'userDefinedProperties': userDefinedProperties,
-      'children': children.map((child) => child.toJSON()).toList(),
-    });
+    };
+
+    // Only add 'children' if it's not empty
+    if (children.isNotEmpty) {
+      data['children'] = children.map((child) => child.toJSON()).toList();
+    }
+
+    return data;
   }
 
   static Equipment fromJSON(Map<String, dynamic> json) {
