@@ -1,121 +1,236 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:git/git.dart';
+import '../models/providers.dart';
 
 class GitView extends ConsumerStatefulWidget {
   const GitView({super.key});
 
   @override
-  ConsumerState<GitView> createState() => GitViewState();
+  ConsumerState<GitView> createState() => _GitViewState();
 }
 
-class GitViewState extends ConsumerState<GitView> {
-  // The selected commit for details and diff
-  // This is just a placeholder, you'll need to replace it with your actual commit data type
-  Map<String, dynamic>? selectedCommit;
+class _GitViewState extends ConsumerState<GitView> {
+  GitDir? gitDir;
+  bool isGitDirInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeGitDir(ref);
+  }
+
+  Future<void> initializeGitDir(WidgetRef ref) async {
+    String? filePath = ref.read(currentFilePathProvider);
+    if (filePath != null) {
+      Directory dir = Directory(filePath).parent;
+      if (await GitDir.isGitDir(dir.path)) {
+        gitDir = await GitDir.fromExisting(dir.path);
+      } else {
+        gitDir = await GitDir.init(dir.path);
+      }
+      if (mounted) {
+        setState(() {
+          isGitDirInitialized = true;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Commit History Panel
-        Expanded(
-          flex: 2,
-          child: CommitHistoryPanel(
-            onSelectCommit: (commitData) {
-              setState(() {
-                selectedCommit = commitData;
-              });
-            },
+    if (gitDir != null && isGitDirInitialized) {
+      return Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: _TagDropdown(gitDir: gitDir!),
           ),
+          const VerticalDivider(width: 1),
+          Expanded(
+            flex: 3,
+            child: _CommitHistoryView(gitDir: gitDir!),
+          ),
+        ],
+      );
+    } else {
+      return const CircularProgressIndicator();
+    }
+  }
+}
+
+class _TagDropdown extends StatefulWidget {
+  final GitDir gitDir;
+
+  const _TagDropdown({super.key, required this.gitDir});
+
+  @override
+  _TagDropdownState createState() => _TagDropdownState();
+}
+
+class _TagDropdownState extends State<_TagDropdown> {
+  String? selectedTag;
+  List<String> tags = [];
+  Map<String, String>? fetchedCommitDetails; // Variable for commit details
+  String? additionalTagDescription; // Variable for additional tag description
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTags();
+  }
+
+  Future<void> fetchTags() async {
+    var result = await widget.gitDir.runCommand(['tag']);
+    var tagList = result.stdout.toString().split('\n');
+    if (mounted) {
+      setState(() {
+        tags = tagList;
+      });
+    }
+  }
+
+  Future<String?> getAdditionalTagDescription(String tag) async {
+    try {
+      // Fetch the annotation of the tag
+      var result = await widget.gitDir.runCommand(['tag', '-l', tag, '-n']);
+      String annotation = result.stdout.toString().trim();
+      return annotation;
+    } catch (e) {
+      print('Error fetching tag annotation: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, String>> getCommitDetailsForTag(String tag) async {
+    try {
+      // Get the commit SHA for the tag
+      var result =
+          await widget.gitDir.runCommand(['show-ref', '--tags', '-d', tag]);
+      var parts = result.stdout.toString().split(' ');
+      String commitSha = parts[0];
+
+      // Get commit details, enclosing the format string in quotes
+      var commitDetailsResult = await widget.gitDir
+          .runCommand(['show', '-s', "--format='%H|%an|%aD|%s'", commitSha]);
+      var details = commitDetailsResult.stdout.toString();
+
+      // Split the details into parts
+      // Remove the first and last character (which will be single quotes) if present
+      if (details.startsWith("'") && details.endsWith("'")) {
+        details = details.substring(1, details.length - 1);
+      }
+      var detailsParts = details.split('|');
+
+      return {
+        'sha': detailsParts[0],
+        'author': detailsParts[1],
+        'date': detailsParts[2],
+        'message': detailsParts[3]
+      };
+    } catch (e) {
+      print('Error getting commit details for tag: $e');
+      return {};
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        DropdownButton<String>(
+          value: selectedTag,
+          onChanged: (String? newValue) async {
+            if (newValue != null) {
+              var commitDetails = await getCommitDetailsForTag(newValue);
+              String? description = await getAdditionalTagDescription(
+                  newValue); // Implement this method
+
+              setState(() {
+                selectedTag = newValue;
+                fetchedCommitDetails = commitDetails;
+                additionalTagDescription = description;
+              });
+            }
+          },
+          items: tags.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
         ),
-        const VerticalDivider(width: 1),
-        // Commit Detail View and Diff Viewer
-        Expanded(
-          flex: 3,
-          child: selectedCommit == null
-              ? const Center(child: Text('Select a commit to view details'))
-              : CommitDetailView(commitData: selectedCommit!),
-        ),
+        if (selectedTag != null && fetchedCommitDetails != null)
+          TagDetailsPanel(
+            tagName: selectedTag!,
+            commitDetails:
+                fetchedCommitDetails!, // Use ! to assert non-nullability
+            additionalDescription: additionalTagDescription,
+          ),
       ],
     );
   }
 }
 
-// Placeholder Widget for Commit History Panel
-class CommitHistoryPanel extends StatelessWidget {
-  final Function(Map<String, dynamic>) onSelectCommit;
+class _CommitHistoryView extends StatelessWidget {
+  final GitDir gitDir;
 
-  const CommitHistoryPanel({super.key, required this.onSelectCommit});
+  const _CommitHistoryView({super.key, required this.gitDir});
 
   @override
   Widget build(BuildContext context) {
-    // This would be your commit history data
-    final List<Map<String, dynamic>> commitHistory = [
-      {
-        'message': 'Initial commit',
-        'author': 'User A',
-        'date': '2024-01-18', /* Other commit data */
-      },
-      // More commits...
-    ];
-
+    // Fetch and display commit history
+    // For now, this is a placeholder for actual implementation
     return ListView.builder(
-      itemCount: commitHistory.length,
-      itemBuilder: (context, index) {
-        var commit = commitHistory[index];
+      itemCount: 10, // Replace with actual count of commits
+      itemBuilder: (BuildContext context, int index) {
         return ListTile(
-          title: Text(commit['message']),
-          subtitle: Text('by ${commit['author']} on ${commit['date']}'),
-          onTap: () => onSelectCommit(commit),
+          title: Text('Commit $index'), // Replace with actual commit data
+          onTap: () {
+            // Handle commit selection for diffing
+          },
         );
       },
     );
   }
 }
 
-// Placeholder Widget for Commit Detail View
-class CommitDetailView extends StatelessWidget {
-  final Map<String, dynamic> commitData;
+class TagDetailsPanel extends StatelessWidget {
+  final String tagName;
+  final Map<String, String> commitDetails;
+  final String?
+      additionalDescription; // Additional descriptive text for the tag
 
-  const CommitDetailView({super.key, required this.commitData});
-
-  @override
-  Widget build(BuildContext context) {
-    // You'd replace this with the actual details of the selected commit
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Commit Details',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text('Message: ${commitData['message']}'),
-        ),
-        // ... Add more detail widgets like author, date, file changes, etc.
-        Expanded(
-          child: DiffViewer(commitData: commitData), // Your diff viewer widget
-        ),
-      ],
-    );
-  }
-}
-
-// Placeholder Widget for Diff Viewer
-class DiffViewer extends StatelessWidget {
-  final Map<String, dynamic> commitData;
-
-  const DiffViewer({super.key, required this.commitData});
+  const TagDetailsPanel({
+    super.key,
+    required this.tagName,
+    required this.commitDetails,
+    this.additionalDescription,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Placeholder for diff viewer, you'll need to implement actual diffing logic
-    return const Center(
-      child: Text('Diff Viewer - Show changes here'),
+    return Card(
+      margin: const EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              tagName,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const Divider(),
+            Text('Commit SHA: ${commitDetails['sha']}'),
+            Text('Author: ${commitDetails['author']}'),
+            Text('Date: ${commitDetails['date']}'),
+            Text('Message: ${commitDetails['message']}'),
+          ],
+        ),
+      ),
     );
   }
 }

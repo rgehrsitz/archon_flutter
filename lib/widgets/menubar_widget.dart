@@ -64,6 +64,16 @@ class MenuModel {
       ),
     ];
   }
+
+  static List<MenuItem> getHelpMenu() {
+    return [
+      MenuItem(
+          label: 'About',
+          onPressed: () {
+            // Display About Dialog
+          }),
+    ];
+  }
 }
 
 // Menu item class
@@ -107,6 +117,17 @@ class MyMenuBar extends ConsumerWidget {
               )
               .toList(),
           child: const Text('Edit'),
+        ),
+        SubmenuButton(
+          menuChildren: MenuModel.getHelpMenu()
+              .map(
+                (item) => MenuItemButton(
+                  onPressed: item.onPressed,
+                  child: Text(item.label),
+                ),
+              )
+              .toList(),
+          child: const Text('Help'),
         ),
         // ... Other SubmenuButtons
       ],
